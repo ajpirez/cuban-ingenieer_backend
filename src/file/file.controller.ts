@@ -16,6 +16,7 @@ import { diskStorage } from 'multer';
 import { ActiveUser } from '../auth/decorators/active-user.decorator';
 import { Response } from 'express';
 import { PaginationDto } from '../common/dto/pagination.dto';
+import { FileStatus } from './entities/file.entity';
 
 @Controller('file')
 export class FileController {
@@ -28,6 +29,7 @@ export class FileController {
       {
         // relations: ['user'],
         user: { id: user.sub },
+        file_status: FileStatus.COMPRESSED,
       },
       { page, limit },
     );
@@ -66,7 +68,7 @@ export class FileController {
     @Param('id') id: string,
     @Res() res: Response,
   ) {
-    const file = await this.fileService.findOne({ id, userId: user.sub });
+    const file = await this.fileService.findOne({ id, user: { id: user.sub } });
 
     if (!file) {
       throw new BadRequestException(
@@ -74,7 +76,16 @@ export class FileController {
       );
     }
 
-    res.download(file.original_file_path, file.file_name, (err) => {
+    const zipFileName = file.compressed_file_path.endsWith('.zip')
+      ? file.compressed_file_path
+      : `${file.compressed_file_path}.zip`;
+
+    res.set({
+      'Content-Disposition': `attachment; filename="${zipFileName}"`,
+      'Content-Type': 'application/zip',
+    });
+
+    res.download(file.compressed_file_path, zipFileName, (err) => {
       if (err) {
         throw new BadRequestException('Error downloading file');
       }
