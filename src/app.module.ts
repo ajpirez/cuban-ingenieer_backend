@@ -12,6 +12,7 @@ import { TaskModule } from './task/task.module';
 import redisConfig from './redis/config/redis.config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_PROVIDERS } from './app.providers';
+import { FileModule } from './file/file.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { APP_PROVIDERS } from './app.providers';
     TypedEventEmitterModule,
     DatabaseModule,
     AuthModule,
+    FileModule,
   ],
   providers: [...APP_PROVIDERS],
 })

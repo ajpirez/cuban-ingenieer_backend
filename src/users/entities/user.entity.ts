@@ -2,6 +2,7 @@ import { Base } from 'src/base/base.entity';
 import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { UserRol } from '../enums/user.rol';
 import { Task } from '../../task/entities/task.entity';
+import {File} from '../../file/entities/file.entity';
 
 @Entity()
 export class User extends Base {
@@ -28,4 +29,7 @@ export class User extends Base {
 
   @OneToMany(() => Task, (task) => task.user)
   tasks: Task[];
+
+  @OneToMany(() => File, (file) => file.user)
+  files: File[];
 }
