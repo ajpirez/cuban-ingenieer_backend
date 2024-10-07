@@ -3,10 +3,10 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { randomUUID } from 'crypto';
 import { Response } from 'express';
-import { BaseService } from 'src/base/base.service';
-import { HashingService } from 'src/common/hashing/hashing.service';
-import { AllConfigType } from 'src/config/config.type';
-import { User } from 'src/users/entities/user.entity';
+import { BaseService } from '../../base/base.service';
+import { HashingService } from '../../common/hashing/hashing.service';
+import { AllConfigType } from '../../config/config.type';
+import { User } from '../../users/entities/user.entity';
 import { REFRESH_TOKEN_KEY } from '../auth.constants';
 import { ActiveUserData } from '../interfaces/active-user-data.interface';
 import {
@@ -39,7 +39,6 @@ export class AuthenticationService extends BaseService<User>(User) {
 
       const user = await this.genericRepository.findOne({
         where: { id: sub },
-        // relations: { role: true },
       });
 
       const isValid = await this.refreshTokenIdsStorage.validate(
@@ -135,7 +134,6 @@ export class AuthenticationService extends BaseService<User>(User) {
   async validateUser(email: string, pass: string): Promise<User> {
     const user = await this.genericRepository.findOne({
       where: { email },
-      // relations: { role: true, permission: true },
       select: ['id', 'email', 'password', 'role'],
     });
 

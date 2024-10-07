@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -20,6 +21,21 @@ import { ActiveUser } from '../auth/decorators/active-user.decorator';
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
+  private async findUserTask(taskId: string, userId: string) {
+    const task = await this.taskService.findOne({
+      id: taskId,
+      user: { id: userId },
+    });
+
+    if (!task) {
+      throw new BadRequestException(
+        'Task not found or you do not have permission to access it.',
+      );
+    }
+
+    return task;
+  }
+
   @Post()
   async create(@ActiveUser() user, @Body() createTaskDto: CreateTaskDto) {
     const task = this.taskService.genericRepository.create({
@@ -37,7 +53,6 @@ export class TaskController {
     const { page, limit } = data;
     return this.taskService.findAll(
       {
-        // relations: ['user'],
         user: { id: user.sub },
       },
       { page, limit },
@@ -50,12 +65,12 @@ export class TaskController {
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateTaskDto: UpdateTaskDto) {
-    const task = await this.taskService.findOne({ id });
-
-    if (!task) {
-      throw new NotFoundException('Task not found');
-    }
+  async update(
+    @ActiveUser() user,
+    @Param('id') id: string,
+    @Body() updateTaskDto: UpdateTaskDto,
+  ) {
+    await this.findUserTask(id, user.sub);
 
     return await this.taskService.update(id, updateTaskDto, {
       new: true,
@@ -63,14 +78,8 @@ export class TaskController {
   }
 
   @Patch(':id/completed')
-  async updateCompleted(@Param('id') id: string) {
-    const task = await this.taskService.findOne({
-      id,
-    });
-
-    if (!task) {
-      throw new NotFoundException('Task not found');
-    }
+  async updateCompleted(@ActiveUser() user, @Param('id') id: string) {
+    const task = await this.findUserTask(id, user.sub);
 
     task.completed = !task.completed;
 
@@ -79,13 +88,7 @@ export class TaskController {
 
   @Delete(':id')
   async remove(@ActiveUser() user, @Param('id') id: string) {
-    const task = await this.taskService.findOne({
-      id,
-    });
-
-    if (!task) {
-      throw new NotFoundException('Task not found');
-    }
+    await this.findUserTask(id, user.sub);
 
     await this.taskService.softRemove(id, user);
     return true;

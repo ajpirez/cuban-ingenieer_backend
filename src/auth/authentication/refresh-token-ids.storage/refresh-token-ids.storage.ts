@@ -5,8 +5,8 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Redis } from 'ioredis';
-import { AllConfigType } from 'src/config/config.type';
-import { RedisModule } from 'src/redis/redis.module';
+import { AllConfigType } from '../../../config/config.type';
+import { RedisModule } from '../../../redis/redis.module';
 
 export class InvalidateRefreshTokenError extends Error {}
 

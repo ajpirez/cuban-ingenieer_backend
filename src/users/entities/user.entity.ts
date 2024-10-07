@@ -1,8 +1,8 @@
-import { Base } from 'src/base/base.entity';
+import { Base } from '../../base/base.entity';
 import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { UserRol } from '../enums/user.rol';
 import { Task } from '../../task/entities/task.entity';
-import {File} from '../../file/entities/file.entity';
+import { File } from '../../file/entities/file.entity';
 
 @Entity()
 export class User extends Base {
