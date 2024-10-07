@@ -1,8 +1,10 @@
 import {
   BadRequestException,
+  Body,
   Controller,
   Get,
   Param,
+  Patch,
   Post,
   Query,
   Res,
@@ -17,19 +19,37 @@ import { ActiveUser } from '../auth/decorators/active-user.decorator';
 import { Response } from 'express';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { FileStatus } from './entities/file.entity';
+import { UpdateNameDto } from './dto/update-name.dto';
 
 @Controller('file')
 export class FileController {
   constructor(private readonly fileService: FileService) {}
+
+  private async findUserFile(fileId: string, userId: string) {
+    const file = await this.fileService.findOne({
+      id: fileId,
+      user: { id: userId },
+    });
+
+    if (!file) {
+      throw new BadRequestException(
+        'File not found or you do not have permission to access it.',
+      );
+    }
+
+    if (file.file_status === FileStatus.UPLOADED) {
+      throw new BadRequestException('File not compressed');
+    }
+
+    return file;
+  }
 
   @Get()
   findAll(@ActiveUser() user, @Query() data: PaginationDto) {
     const { page, limit } = data;
     return this.fileService.findAll(
       {
-        // relations: ['user'],
         user: { id: user.sub },
-        file_status: FileStatus.COMPRESSED,
       },
       { page, limit },
     );
@@ -51,15 +71,30 @@ export class FileController {
     @UploadedFile() file: Express.Multer.File,
   ) {
     if (!file) throw new BadRequestException('Make sure that file is an image');
-    console.log(file);
-    const savedFile = await this.fileService.create({
+    return this.fileService.create({
       user: { id: user.sub },
       file_name: file.filename,
       file_size: file.size,
+      file_original_name: file.originalname,
       original_file_path: file.path,
     });
+  }
 
-    return { secureUrl: file.path };
+  @Patch(':id')
+  async updateOriginalName(
+    @ActiveUser() user: any,
+    @Param('id') id: string,
+    @Body() body: UpdateNameDto,
+  ) {
+    await this.findUserFile(id, user.sub);
+
+    return this.fileService.update(
+      id,
+      {
+        file_original_name: body.name,
+      },
+      { new: true },
+    );
   }
 
   @Get('download/:id')
@@ -68,13 +103,7 @@ export class FileController {
     @Param('id') id: string,
     @Res() res: Response,
   ) {
-    const file = await this.fileService.findOne({ id, user: { id: user.sub } });
-
-    if (!file) {
-      throw new BadRequestException(
-        'File not found or you do not have permission to access it.',
-      );
-    }
+    const file = await this.findUserFile(id, user.sub);
 
     const zipFileName = file.compressed_file_path.endsWith('.zip')
       ? file.compressed_file_path

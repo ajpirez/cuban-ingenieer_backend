@@ -16,6 +16,9 @@ export class File extends Base {
   file_name: string;
 
   @Column()
+  file_original_name: string;
+
+  @Column()
   file_size: number;
 
   @Column({
