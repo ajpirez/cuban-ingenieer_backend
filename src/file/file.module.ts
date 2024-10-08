@@ -9,6 +9,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { FILE_QUEUE } from './constants';
 import { ProcessFilesCron } from './cron/processFiles.cron';
 import { FileProcessor } from './queue/files.consumer';
+import { EventsService } from 'src/file/events.service';
 
 @Module({
   imports: [
@@ -36,7 +37,7 @@ import { FileProcessor } from './queue/files.consumer';
     TypeOrmModule.forFeature([File]),
   ],
   controllers: [FileController],
-  providers: [FileService, ProcessFilesCron, FileProcessor],
+  providers: [FileService, ProcessFilesCron, FileProcessor, EventsService],
   exports: [TypeOrmModule],
 })
 export class FileModule {}

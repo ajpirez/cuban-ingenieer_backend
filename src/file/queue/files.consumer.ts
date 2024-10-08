@@ -7,6 +7,7 @@ import { FileService } from '../file.service';
 import { Logger } from '@nestjs/common';
 import { FILE_QUEUE } from '../constants';
 import { FileStatus } from '../entities/file.entity';
+import { EventsService } from 'src/file/events.service';
 
 type File = {
   filePath: string;
@@ -26,7 +27,10 @@ export type InvalidateParams = {
 export class FileProcessor {
   private readonly logger = new Logger(FileProcessor.name);
 
-  constructor(private readonly fileService: FileService) {}
+  constructor(
+    private readonly fileService: FileService,
+    private readonly eventsService: EventsService,
+  ) {}
 
   private compressFile(filePath: string, zipPath: string): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -90,13 +94,13 @@ export class FileProcessor {
           fs.unlink(update.filePath, (err) => {
             if (err) {
               this.logger.error(
-                `Error al eliminar el archivo original: ${update.fileName}`,
+                `Erro deleting original file: ${update.fileName}`,
                 err,
               );
               reject(err);
             } else {
               this.logger.debug(
-                `Archivo original eliminado: ${update.fileName}`,
+                `Original file was deleted: ${update.fileName}`,
               );
               resolve();
             }
@@ -105,6 +109,10 @@ export class FileProcessor {
       }),
     );
 
+    this.eventsService.broadcastMessage(
+      'notification',
+      '✅ Success File compression, process done.',
+    );
     await job.moveToCompleted('', true);
   }
 

@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   Res,
   UploadedFile,
   UseInterceptors,
@@ -16,14 +17,20 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { fileFilter, fileNamer } from './helpers';
 import { diskStorage } from 'multer';
 import { ActiveUser } from '../auth/decorators/active-user.decorator';
-import { Response } from 'express';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { FileStatus } from './entities/file.entity';
 import { UpdateNameDto } from './dto/update-name.dto';
+import { EventsService } from 'src/file/events.service';
+import { Request, Response } from 'express';
+import { Auth } from 'src/auth/authentication/decorators/auth.decorator';
+import { AuthType } from 'src/auth/authentication/enums/auth-type.enum';
 
 @Controller('file')
 export class FileController {
-  constructor(private readonly fileService: FileService) {}
+  constructor(
+    private readonly fileService: FileService,
+    private readonly events: EventsService,
+  ) {}
 
   private async findUserFile(fileId: string, userId: string) {
     const file = await this.fileService.findOne({
@@ -119,5 +126,16 @@ export class FileController {
         throw new BadRequestException('Error downloading file');
       }
     });
+  }
+
+  @Auth(AuthType.None)
+  @Get('sse/:client')
+  sse(
+    @Param('client') client: string,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    req.on('close', () => this.events.removeClient(client));
+    return this.events.addClient(client, res);
   }
 }
