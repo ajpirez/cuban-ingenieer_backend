@@ -1,5 +1,4 @@
-import { Controller, Get, HttpStatus } from '@nestjs/common';
-import { apiResponseHandler } from 'src/utils/apiResponseHandler';
+import { Controller, Get } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { ActiveUser } from 'src/auth/decorators/active-user.decorator';
 import { ActiveUserData } from 'src/auth/interfaces/active-user-data.interface';
@@ -22,23 +21,4 @@ export class UsersController {
     });
     return users;
   }
-
-  // @Post()
-  // async create(
-  //   @Body() createUserDto: CreateUserDto,
-  //   @ActiveUser() activeUser: ActiveUserData,
-  // ) {
-  //   const password = this.usersService.generatePassword(12);
-  //
-  //   const newUser = await this.usersService.create(
-  //     { ...createUserDto, password },
-  //     activeUser,
-  //   );
-  //
-  //   return apiResponseHandler(
-  //     'User created successfully',
-  //     HttpStatus.CREATED,
-  //     newUser,
-  //   );
-  // }
 }

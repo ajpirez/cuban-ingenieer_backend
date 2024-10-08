@@ -29,6 +29,7 @@ describe('AuthenticationController', () => {
         user: {
           id: expect.any(String),
           email: loginUserDto.email,
+          avatar: expect.any(String),
           role: UserRol.User,
         },
       },
@@ -38,6 +39,7 @@ describe('AuthenticationController', () => {
       status: 200,
       data: {
         id: expect.any(String),
+        name: userDTO.name,
         email: userDTO.email,
         role: UserRol.User,
       },
@@ -119,6 +121,7 @@ describe('AuthenticationController', () => {
 
   it('should sign up a user and call apiResponseHandler', async () => {
     const userDTO = {
+      name: 'Alejandro Pírez',
       email: 'ajpirez1994@gmail.com',
       password: '123qwe123',
     };
@@ -130,6 +133,7 @@ describe('AuthenticationController', () => {
       expect.any(Number),
       expect.objectContaining({
         id: expect.any(String),
+        name: userDTO.name,
         email: userDTO.email,
         role: UserRol.User,
       }),
@@ -139,6 +143,7 @@ describe('AuthenticationController', () => {
       status: expect.any(Number),
       data: expect.objectContaining({
         id: expect.any(String),
+        name: userDTO.name,
         email: userDTO.email,
         role: UserRol.User,
       }),

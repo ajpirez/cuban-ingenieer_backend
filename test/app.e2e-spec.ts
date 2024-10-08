@@ -20,6 +20,7 @@ describe('TaskController (e2e)', () => {
   let usersRepository: Repository<User>;
 
   const user = {
+    name: 'Alejandro Pírez',
     email: 'ajpirez1994@gmail.com',
     password: '123qwe123',
     role: UserRol.User,
@@ -57,7 +58,11 @@ describe('TaskController (e2e)', () => {
   beforeEach(async () => {
     await usersRepository.delete({ email: user.email });
 
-    await authService.create({ email: user.email, password: user.password });
+    await authService.create({
+      name: user.name,
+      email: user.email,
+      password: user.password,
+    });
 
     const { body } = await request
       .agent(app.getHttpServer())

@@ -27,6 +27,7 @@ import { Request, Response } from 'express';
 import { Auth } from 'src/auth/authentication/decorators/auth.decorator';
 import { AuthType } from 'src/auth/authentication/enums/auth-type.enum';
 import * as fs from 'fs';
+import { ActiveUserData } from 'src/auth/interfaces/active-user-data.interface';
 
 @Controller('file')
 export class FileController {
@@ -36,7 +37,7 @@ export class FileController {
     private readonly events: EventsService,
   ) {}
 
-  private async findUserFile(fileId: string, userId: string) {
+  private async findUserFile(fileId: string, userId: ActiveUserData['sub']) {
     const file = await this.fileService.findOne({
       id: fileId,
       user: { id: userId },
@@ -56,7 +57,7 @@ export class FileController {
   }
 
   @Get()
-  findAll(@ActiveUser() user, @Query() data: PaginationDto) {
+  findAll(@ActiveUser() user:ActiveUserData, @Query() data: PaginationDto) {
     const { page, limit } = data;
     return this.fileService.findAll(
       {
@@ -78,7 +79,7 @@ export class FileController {
     }),
   )
   async uploadProductImage(
-    @ActiveUser() user,
+    @ActiveUser() user:ActiveUserData,
     @UploadedFile() file: Express.Multer.File,
   ) {
     if (!file) throw new BadRequestException('Make sure that file is an image');
@@ -93,7 +94,7 @@ export class FileController {
 
   @Patch(':id')
   async updateOriginalName(
-    @ActiveUser() user: any,
+    @ActiveUser() user: ActiveUserData,
     @Param('id') id: string,
     @Body() body: UpdateNameDto,
   ) {
@@ -110,7 +111,7 @@ export class FileController {
 
   @Get('download/:id')
   async downloadFile(
-    @ActiveUser() user: any,
+    @ActiveUser() user: ActiveUserData,
     @Param('id') id: string,
     @Res() res: Response,
   ) {
@@ -133,7 +134,7 @@ export class FileController {
   }
 
   @Delete(':id')
-  async deleteFile(@ActiveUser() user: any, @Param('id') id: string) {
+  async deleteFile(@ActiveUser() user: ActiveUserData, @Param('id') id: string) {
     const file = await this.findUserFile(id, user.sub);
     await this.fileService.remove(id);
     new Promise<void>((resolve, reject) => {
