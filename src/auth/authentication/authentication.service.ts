@@ -134,7 +134,7 @@ export class AuthenticationService extends BaseService<User>(User) {
   async validateUser(email: string, pass: string): Promise<User> {
     const user = await this.genericRepository.findOne({
       where: { email },
-      select: ['id', 'email', 'password', 'role'],
+      select: ['id', 'email', 'password', 'role', 'avatar'],
     });
 
     if (!user) {

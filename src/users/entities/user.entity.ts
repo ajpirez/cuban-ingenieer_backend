@@ -9,6 +9,12 @@ export class User extends Base {
   @Column({ unique: true })
   email: string;
 
+  @Column({ nullable: false })
+  name: string;
+
+  @Column({ nullable: true })
+  avatar: string;
+
   @Column({ nullable: true, select: false })
   password?: string;
 

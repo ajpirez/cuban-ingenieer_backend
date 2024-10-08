@@ -2,7 +2,9 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
+  Logger,
   Param,
   Patch,
   Post,
@@ -24,9 +26,11 @@ import { EventsService } from 'src/file/events.service';
 import { Request, Response } from 'express';
 import { Auth } from 'src/auth/authentication/decorators/auth.decorator';
 import { AuthType } from 'src/auth/authentication/enums/auth-type.enum';
+import * as fs from 'fs';
 
 @Controller('file')
 export class FileController {
+  private readonly logger = new Logger(FileController.name);
   constructor(
     private readonly fileService: FileService,
     private readonly events: EventsService,
@@ -126,6 +130,29 @@ export class FileController {
         throw new BadRequestException('Error downloading file');
       }
     });
+  }
+
+  @Delete(':id')
+  async deleteFile(@ActiveUser() user: any, @Param('id') id: string) {
+    const file = await this.findUserFile(id, user.sub);
+    await this.fileService.remove(id);
+    new Promise<void>((resolve, reject) => {
+      fs.unlink(file.compressed_file_path, (err) => {
+        if (err) {
+          this.logger.error(
+            `Erro deleting compressed file: ${file.compressed_file_path}`,
+            err,
+          );
+          reject(err);
+        } else {
+          this.logger.debug(
+            `Compressed file was deleted: ${file.compressed_file_path}`,
+          );
+          resolve();
+        }
+      });
+    });
+    return true
   }
 
   @Auth(AuthType.None)

@@ -223,12 +223,14 @@ export function BaseService<T>(
           conditions['orderDirection'] || OrderDirections.ASC;
         const select = conditions['select'] || [];
         const relations = conditions['relations'] || [];
+        const exclusions = conditions['exclusions'] || {};
 
         const where: Params = { ...conditions };
         delete where.order;
         delete where.orderDirection;
         delete where.relations;
         delete where.select;
+        delete where.exclusions;
 
         const queryBuilder =
           this.genericRepository.createQueryBuilder('entity');
@@ -236,6 +238,12 @@ export function BaseService<T>(
           queryBuilder.withDeleted();
           delete where.deleted;
         }
+
+        Object.keys(exclusions).forEach((key: string) => {
+          queryBuilder.andWhere(`entity.${key} != :${key}`, {
+            [key]: exclusions[key],
+          });
+        });
 
         if (smartSearch) {
           Object.keys(smartSearch).forEach((key: string) => {

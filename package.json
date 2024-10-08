@@ -62,6 +62,7 @@
     "passport-local": "^1.0.0",
     "pg": "^8.11.3",
     "qrcode": "^1.5.3",
+    "random-avatar-generator": "^2.0.0",
     "reflect-metadata": "^0.1.14",
     "rxjs": "^7.8.1",
     "typeorm": "^0.3.20",

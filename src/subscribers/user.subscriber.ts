@@ -7,6 +7,7 @@ import {
   InsertEvent,
   UpdateEvent,
 } from 'typeorm';
+import { AvatarGenerator } from 'random-avatar-generator';
 
 @EventSubscriber()
 export class UserSubscriber implements EntitySubscriberInterface<User> {
@@ -23,7 +24,8 @@ export class UserSubscriber implements EntitySubscriberInterface<User> {
 
   async beforeInsert(event: InsertEvent<User>) {
     const { password } = event.entity;
-
+    const generator = new AvatarGenerator();
+    event.entity.avatar = generator.generateRandomAvatar();
     password
       ? (event.entity.password = await this.hashingService.hash(password))
       : null;
