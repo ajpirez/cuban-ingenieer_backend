@@ -14,8 +14,10 @@ import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { ActiveUser } from '../auth/decorators/active-user.decorator';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
-// @Roles(UserRol.Admin)
+@ApiBearerAuth()
+@ApiTags('Tasks')
 @Controller('tasks')
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
@@ -35,6 +37,7 @@ export class TaskController {
     return task;
   }
 
+  @ApiOperation({ summary: 'Create a new task' })
   @Post()
   async create(@ActiveUser() user, @Body() createTaskDto: CreateTaskDto) {
     const task = this.taskService.genericRepository.create({
@@ -47,6 +50,7 @@ export class TaskController {
     return task;
   }
 
+  @ApiOperation({ summary: 'Get all tasks By User' })
   @Get()
   findAll(@ActiveUser() user, @Query() data: PaginationDto) {
     const { page, limit } = data;
@@ -58,11 +62,13 @@ export class TaskController {
     );
   }
 
+  @ApiOperation({ summary: 'Get a single task' })
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.taskService.findOne({ id });
   }
 
+  @ApiOperation({ summary: 'Update a task' })
   @Patch(':id')
   async update(
     @ActiveUser() user,
@@ -76,6 +82,7 @@ export class TaskController {
     });
   }
 
+  @ApiOperation({ summary: 'Update a task to completed' })
   @Patch(':id/completed')
   async updateCompleted(@ActiveUser() user, @Param('id') id: string) {
     const task = await this.findUserTask(id, user.sub);
@@ -85,6 +92,7 @@ export class TaskController {
     return await this.taskService.genericRepository.save(task);
   }
 
+  @ApiOperation({ summary: 'Delete a task' })
   @Delete(':id')
   async remove(@ActiveUser() user, @Param('id') id: string) {
     await this.findUserTask(id, user.sub);

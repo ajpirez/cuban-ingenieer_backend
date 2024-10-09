@@ -17,13 +17,20 @@ import { Auth } from './decorators/auth.decorator';
 import { SignUpDto } from './dto/sign-up.dto';
 import { AuthType } from './enums/auth-type.enum';
 import { LocalAuthGuard } from './guards/local-auth.guard';
+import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Authentication')
 @Controller('auth')
 export class AuthenticationController {
   private readonly logger = new Logger(AuthenticationController.name);
 
   constructor(private readonly authenticationService: AuthenticationService) {}
 
+  @ApiOperation({
+    summary: 'Sign up',
+    description: 'Sign up',
+  })
+  @ApiBody({ type: SignUpDto })
   @Auth(AuthType.None)
   @Post('sign-up')
   async signUp(@Body() signUpDto: SignUpDto) {
@@ -37,6 +44,26 @@ export class AuthenticationController {
     );
   }
 
+  @ApiOperation({
+    summary: 'Sign in',
+    description: 'Sign in',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        email: {
+          type: 'string',
+          example: 'ajpirez1994@gmail.com',
+        },
+        password: {
+          type: 'string',
+          example: '123456',
+        },
+      },
+      required: ['email', 'password'],
+    },
+  })
   @Auth(AuthType.None)
   @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)

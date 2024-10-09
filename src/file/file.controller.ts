@@ -28,10 +28,14 @@ import { Auth } from 'src/auth/authentication/decorators/auth.decorator';
 import { AuthType } from 'src/auth/authentication/enums/auth-type.enum';
 import * as fs from 'fs';
 import { ActiveUserData } from 'src/auth/interfaces/active-user-data.interface';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 
+@ApiBearerAuth()
+@ApiTags('File')
 @Controller('file')
 export class FileController {
   private readonly logger = new Logger(FileController.name);
+
   constructor(
     private readonly fileService: FileService,
     private readonly events: EventsService,
@@ -56,6 +60,7 @@ export class FileController {
     return file;
   }
 
+  @ApiOperation({ summary: 'Get all files' })
   @Get()
   findAll(@ActiveUser() user: ActiveUserData, @Query() data: PaginationDto) {
     const { page, limit } = data;
@@ -67,6 +72,19 @@ export class FileController {
     );
   }
 
+  @ApiOperation({ summary: 'Get file' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
   @Post('upload')
   @UseInterceptors(
     FileInterceptor('file', {
@@ -91,6 +109,8 @@ export class FileController {
       original_file_path: file.path,
     });
   }
+
+  @ApiOperation({ summary: 'Update file name' })
 
   @Patch(':id')
   async updateOriginalName(
@@ -118,6 +138,7 @@ export class FileController {
     );
   }
 
+  @ApiOperation({ summary: 'Download file' })
   @Get('download/:id')
   async downloadFile(
     @ActiveUser() user: ActiveUserData,
@@ -142,6 +163,7 @@ export class FileController {
     });
   }
 
+  @ApiOperation({ summary: 'Delete file' })
   @Delete(':id')
   async deleteFile(
     @ActiveUser() user: ActiveUserData,
@@ -168,6 +190,7 @@ export class FileController {
     return true;
   }
 
+  @ApiOperation({ summary: 'Server Side Event connection' })
   @Auth(AuthType.None)
   @Get('sse/:client')
   sse(
