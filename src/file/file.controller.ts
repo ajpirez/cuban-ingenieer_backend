@@ -57,7 +57,7 @@ export class FileController {
   }
 
   @Get()
-  findAll(@ActiveUser() user:ActiveUserData, @Query() data: PaginationDto) {
+  findAll(@ActiveUser() user: ActiveUserData, @Query() data: PaginationDto) {
     const { page, limit } = data;
     return this.fileService.findAll(
       {
@@ -79,7 +79,7 @@ export class FileController {
     }),
   )
   async uploadProductImage(
-    @ActiveUser() user:ActiveUserData,
+    @ActiveUser() user: ActiveUserData,
     @UploadedFile() file: Express.Multer.File,
   ) {
     if (!file) throw new BadRequestException('Make sure that file is an image');
@@ -98,7 +98,16 @@ export class FileController {
     @Param('id') id: string,
     @Body() body: UpdateNameDto,
   ) {
-    await this.findUserFile(id, user.sub);
+    const file = await this.fileService.findOne({
+      id: id,
+      user: { id: user.sub },
+    });
+
+    if (!file) {
+      throw new BadRequestException(
+        'File not found or you do not have permission to access it.',
+      );
+    }
 
     return this.fileService.update(
       id,
@@ -134,7 +143,10 @@ export class FileController {
   }
 
   @Delete(':id')
-  async deleteFile(@ActiveUser() user: ActiveUserData, @Param('id') id: string) {
+  async deleteFile(
+    @ActiveUser() user: ActiveUserData,
+    @Param('id') id: string,
+  ) {
     const file = await this.findUserFile(id, user.sub);
     await this.fileService.remove(id);
     new Promise<void>((resolve, reject) => {
@@ -153,7 +165,7 @@ export class FileController {
         }
       });
     });
-    return true
+    return true;
   }
 
   @Auth(AuthType.None)
