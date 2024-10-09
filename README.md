@@ -9,16 +9,22 @@
 
 ## Description
 
-This is an authentication and authorization Nestjs module. It implements JWT access and refresh tokens in the safest way using HTTPOnly cookies and Redis for token invalidation. It also implements user roles and permissions for authorization using Nestjs guards. The database used for storing user, role, and permission entities is PostgreSQL.
 
-In addition to these features, this template provides Two Factor Authentication and Google OAuth2 authentication functionalities.
+
+Every time a user uploads a file, a cron job runs every 1 minute to:
+
+    Compress all uploaded files (excluding .zip files) into ZIP format
+    Delete the original files after compression
+    Notify the frontend via SSE once the file has been compressed
+
+All files not in ZIP format are added to a Bull queue for processing.
 
 ## Steps to Run the Application
 
 1. **Clone the repository**: Use git clone command to clone the repository to your local machine.
 
 ```bash
-git clone --depth 1 https://github.com/valtervalik/Nestjs-TypeORM-Auth-Template.git my-app
+git clone git@github.com:ajpirez/cuban-ingenieer_backend.git
 ```
 
 2. **Enter the project folder and copy .env.example as .env**:
@@ -46,6 +52,17 @@ pnpm install
 docker-compose up -d
 ```
 
+5.  **Migrations**
+### Generate a new migration
+```bash
+npm run typeorm -- --dataSource=src/database/data-source.ts migration:generate .\src\database\migrations\(name)
+```
+
+###  Run migrations
+```bash
+npm run typeorm -- --dataSource=src/database/data-source.ts migration:run
+```
+
 6. **Run the application in development mode**: Use any of the following commands to start the application in development mode.
 
 ```bash
@@ -56,14 +73,5 @@ yarn start:dev
 ```
 ```bash
 pnpm start:dev
-```
-
-
-```
-Command migrations
-
-*Generate* npm run typeorm -- --dataSource=src/database/data-source.ts migration:generate .\src\database\migrations\(name)
-*Run* npm run typeorm -- --dataSource=src/database/data-source.ts migration:run
-
 ```
 

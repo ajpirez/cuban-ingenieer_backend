@@ -13,6 +13,7 @@ import redisConfig from './redis/config/redis.config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_PROVIDERS } from './app.providers';
 import { FileModule } from './file/file.module';
+import { AppController } from 'src/app.controller';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { FileModule } from './file/file.module';
     AuthModule,
     FileModule,
   ],
+  controllers:[AppController],
   providers: [...APP_PROVIDERS],
 })
 export class AppModule {}
